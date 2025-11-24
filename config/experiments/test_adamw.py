@@ -8,7 +8,7 @@ args['seqLen'] = 150
 args['maxTimeSeriesLen'] = 1200
 args['batchSize'] = 64
 args['nUnits'] = 1024
-args['nBatch'] = 10000
+args['nBatch'] = 5000
 args['nLayers'] = 5
 args['seed'] = 0
 args['nClasses'] = 40
@@ -36,7 +36,7 @@ args['scheduler'] = {
     'type': 'cosine_warmup',
     'params': {
         'warmup_steps': 1000,
-        'T_max': 9000,  # total_steps - warmup_steps
+        'T_max': 4000,  # total_steps - warmup_steps
         'eta_min': 0.0,
     }
 }
