@@ -2,8 +2,8 @@
 modelName = 'test_feature_masking'
 
 args = {}
-args['outputDir'] = '/Users/krystoflatka/Documents/GitHub/neural_seq_decoder/logs/speech_logs/' + modelName
-args['datasetPath'] = '/Users/krystoflatka/Documents/GitHub/neural_seq_decoder/processedData'
+args['outputDir'] = '/home/latka/github/neural_seq_decoder/logs/speech_logs/' + modelName
+args['datasetPath'] = '/home/latka/github/neural_seq_decoder/processedData'
 args['seqLen'] = 150
 args['maxTimeSeriesLen'] = 1200
 args['batchSize'] = 64
