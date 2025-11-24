@@ -177,6 +177,9 @@ def trainModel(args):
         # Backpropagation
         optimizer.zero_grad()
         loss.backward()
+        # Gradient clipping (if specified)
+        if args.get("grad_clip", None) is not None:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), args["grad_clip"])
         optimizer.step()
         if scheduler is not None:
             scheduler.step()
