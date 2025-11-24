@@ -62,7 +62,7 @@ def trainModel(args):
     os.makedirs(args["outputDir"], exist_ok=True)
     torch.manual_seed(args["seed"])
     np.random.seed(args["seed"])
-    device = "mps"
+    device = "cuda"
 
     with open(args["outputDir"] + "/args", "wb") as file:
         pickle.dump(args, file)
@@ -254,7 +254,7 @@ def trainModel(args):
                 pickle.dump(tStats, file)
 
 
-def loadModel(modelDir, nInputLayers=24, device="mps"):
+def loadModel(modelDir, nInputLayers=24, device="cuda"):
     modelWeightPath = modelDir + "/modelWeights"
     with open(modelDir + "/args", "rb") as handle:
         args = pickle.load(handle)
