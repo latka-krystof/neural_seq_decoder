@@ -163,3 +163,4 @@ cython_debug/
 competitionData/
 logs/
 processedData
+training_results/
