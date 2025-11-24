@@ -1,5 +1,5 @@
-
-modelName = 'speechBaseline4'
+"""Baseline configuration - matches original settings."""
+modelName = 'baseline'
 
 args = {}
 args['outputDir'] = '/Users/krystoflatka/Documents/GitHub/neural_seq_decoder/logs/speech_logs/' + modelName
@@ -10,7 +10,7 @@ args['batchSize'] = 64
 args['lrStart'] = 0.02
 args['lrEnd'] = 0.02
 args['nUnits'] = 1024
-args['nBatch'] = 10000 #3000
+args['nBatch'] = 10000
 args['nLayers'] = 5
 args['seed'] = 0
 args['nClasses'] = 40
@@ -24,6 +24,6 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-from neural_decoder.neural_decoder_trainer import trainModel
+# Note: Preprocessing is done in the notebook, not here
+# This config uses the old-style augmentation (backward compatible)
 
-trainModel(args)

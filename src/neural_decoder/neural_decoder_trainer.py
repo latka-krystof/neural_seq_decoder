@@ -11,6 +11,9 @@ from torch.utils.data import DataLoader
 
 from .model import GRUDecoder
 from .dataset import SpeechDataset
+from .optimization import create_optimizer, create_scheduler
+from .augmentations import create_augmentation_pipeline
+from .losses.factory import create_loss
 
 
 def getDatasetLoaders(
@@ -59,7 +62,7 @@ def trainModel(args):
     os.makedirs(args["outputDir"], exist_ok=True)
     torch.manual_seed(args["seed"])
     np.random.seed(args["seed"])
-    device = "cuda"
+    device = "mps"
 
     with open(args["outputDir"] + "/args", "wb") as file:
         pickle.dump(args, file)
@@ -83,20 +86,47 @@ def trainModel(args):
         bidirectional=args["bidirectional"],
     ).to(device)
 
-    loss_ctc = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
-    optimizer = torch.optim.Adam(
-        model.parameters(),
-        lr=args["lrStart"],
-        betas=(0.9, 0.999),
-        eps=0.1,
-        weight_decay=args["l2_decay"],
-    )
-    scheduler = torch.optim.lr_scheduler.LinearLR(
-        optimizer,
-        start_factor=1.0,
-        end_factor=args["lrEnd"] / args["lrStart"],
-        total_iters=args["nBatch"],
-    )
+    # Create loss function using modular factory (supports both old and new config style)
+    if "loss" in args and isinstance(args["loss"], dict):
+        # New modular style
+        loss_fn = create_loss(args["loss"])
+    else:
+        # Old style (backward compatibility) - standard CTC loss
+        loss_fn = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
+    
+    # Create optimizer using modular factory (supports both old and new config style)
+    if "optimizer" in args and isinstance(args["optimizer"], dict):
+        # New modular style
+        optimizer = create_optimizer(model, args["optimizer"])
+    else:
+        # Old style (backward compatibility)
+        optimizer = torch.optim.Adam(
+            model.parameters(),
+            lr=args["lrStart"],
+            betas=(0.9, 0.999),
+            eps=0.1,
+            weight_decay=args["l2_decay"],
+        )
+    
+    # Create scheduler using modular factory
+    if "scheduler" in args and isinstance(args["scheduler"], dict):
+        # New modular style
+        scheduler = create_scheduler(optimizer, args["scheduler"], total_steps=args["nBatch"])
+    else:
+        # Old style (backward compatibility)
+        scheduler = torch.optim.lr_scheduler.LinearLR(
+            optimizer,
+            start_factor=1.0,
+            end_factor=args["lrEnd"] / args["lrStart"],
+            total_iters=args["nBatch"],
+        )
+    
+    # Create augmentation pipeline
+    augmentation_pipeline = None
+    if "augmentation" in args and isinstance(args["augmentation"], dict):
+        # New modular style
+        augmentation_pipeline = create_augmentation_pipeline(args["augmentation"])
+    # Old style handled in training loop below
 
     # --train--
     testLoss = []
@@ -114,32 +144,42 @@ def trainModel(args):
             dayIdx.to(device),
         )
 
-        # Noise augmentation is faster on GPU
-        if args["whiteNoiseSD"] > 0:
-            X += torch.randn(X.shape, device=device) * args["whiteNoiseSD"]
+        # Apply augmentations
+        if augmentation_pipeline is not None:
+            # New modular style
+            X = augmentation_pipeline(X)
+        else:
+            # Old style (backward compatibility)
+            if args.get("whiteNoiseSD", 0) > 0:
+                X += torch.randn(X.shape, device=device) * args["whiteNoiseSD"]
 
-        if args["constantOffsetSD"] > 0:
-            X += (
-                torch.randn([X.shape[0], 1, X.shape[2]], device=device)
-                * args["constantOffsetSD"]
-            )
+            if args.get("constantOffsetSD", 0) > 0:
+                X += (
+                    torch.randn([X.shape[0], 1, X.shape[2]], device=device)
+                    * args["constantOffsetSD"]
+                )
 
         # Compute prediction error
         pred = model.forward(X, dayIdx)
 
-        loss = loss_ctc(
-            torch.permute(pred.log_softmax(2), [1, 0, 2]),
-            y,
-            ((X_len - model.kernelLen) / model.strideLen).to(torch.int32),
-            y_len,
-        )
-        loss = torch.sum(loss)
+        # Calculate input lengths for CTC
+        input_lengths = ((X_len - model.kernelLen) / model.strideLen).to(torch.int32)
+        
+        # Apply loss function
+        # Note: CTC expects logits in (seq_len, batch, n_classes) format
+        logits = torch.permute(pred.log_softmax(2), [1, 0, 2])
+        loss = loss_fn(logits, y, input_lengths, y_len)
+        
+        # Handle reduction (some losses return per-sample, some return scalar)
+        if loss.dim() > 0:
+            loss = torch.sum(loss)
 
         # Backpropagation
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        scheduler.step()
+        if scheduler is not None:
+            scheduler.step()
 
         # print(endTime - startTime)
 
@@ -160,13 +200,14 @@ def trainModel(args):
                     )
 
                     pred = model.forward(X, testDayIdx)
-                    loss = loss_ctc(
-                        torch.permute(pred.log_softmax(2), [1, 0, 2]),
-                        y,
-                        ((X_len - model.kernelLen) / model.strideLen).to(torch.int32),
-                        y_len,
-                    )
-                    loss = torch.sum(loss)
+                    # Calculate input lengths for CTC
+                    input_lengths = ((X_len - model.kernelLen) / model.strideLen).to(torch.int32)
+                    # Apply loss function
+                    logits = torch.permute(pred.log_softmax(2), [1, 0, 2])
+                    loss = loss_fn(logits, y, input_lengths, y_len)
+                    # Handle reduction
+                    if loss.dim() > 0:
+                        loss = torch.sum(loss)
                     allLoss.append(loss.cpu().detach().numpy())
 
                     adjustedLens = ((X_len - model.kernelLen) / model.strideLen).to(
@@ -213,7 +254,7 @@ def trainModel(args):
                 pickle.dump(tStats, file)
 
 
-def loadModel(modelDir, nInputLayers=24, device="cuda"):
+def loadModel(modelDir, nInputLayers=24, device="mps"):
     modelWeightPath = modelDir + "/modelWeights"
     with open(modelDir + "/args", "rb") as handle:
         args = pickle.load(handle)
