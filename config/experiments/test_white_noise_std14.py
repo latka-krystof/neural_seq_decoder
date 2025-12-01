@@ -27,7 +27,7 @@ args['l2_decay'] = 1e-5
 args['augmentation'] = {
     'white_noise': {
         'enabled': True,
-        'std': 1.0  # Increased from baseline (0.8)
+        'std': 1.4  # Increased
     },
     'constant_offset': {
         'enabled': True,
