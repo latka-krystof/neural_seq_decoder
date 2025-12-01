@@ -25,11 +25,68 @@ import argparse
 from pathlib import Path
 from typing import List, Dict, Optional
 
-# Add config directory to path
-CONFIG_DIR = Path(__file__).parent.parent / 'config' / 'experiments'
+# Add project root and src directory to path (for Colab compatibility)
+PROJECT_ROOT = Path(__file__).parent.parent
+SRC_DIR = PROJECT_ROOT / 'src'
+CONFIG_DIR = PROJECT_ROOT / 'config' / 'experiments'
+
+# Add to path in order: src (for package imports), then config (for config imports)
+sys.path.insert(0, str(SRC_DIR))
 sys.path.insert(0, str(CONFIG_DIR))
 
 from neural_decoder.neural_decoder_trainer import trainModel
+
+
+# Environment path mappings
+ENV_PATHS = {
+    'kaggle': {
+        'base': '/kaggle/working/neural_seq_decoder',
+    },
+    'google_cloud': {
+        'base': '/content/drive/MyDrive/UCLA_classes/ece243a/neural_seq_decoder',
+    },
+}
+
+
+def adjust_paths_for_environment(args: Dict, env: str) -> Dict:
+    """Adjust outputDir and datasetPath in config based on environment.
+    
+    Args:
+        args: Configuration dictionary
+        env: Environment name ('kaggle' or 'google_cloud')
+        
+    Returns:
+        Modified args dictionary with adjusted paths
+    """
+    if env not in ENV_PATHS:
+        raise ValueError(f"Unknown environment: {env}. Choose from: {list(ENV_PATHS.keys())}")
+    
+    target_base = ENV_PATHS[env]['base']
+    
+    # Create a copy to avoid modifying the original
+    adjusted_args = args.copy()
+    
+    def replace_base_path(path: str) -> str:
+        """Replace any known base path with the target environment's base path."""
+        # Try each known base path and replace if found
+        for env_name, env_config in ENV_PATHS.items():
+            old_base = env_config['base']
+            if path.startswith(old_base):
+                # Extract relative path and prepend target base
+                relative_path = path[len(old_base):].lstrip('/')
+                return f"{target_base}/{relative_path}" if relative_path else target_base
+        # If no known base found, return as-is (might be a custom path)
+        return path
+    
+    # Adjust outputDir if it exists
+    if 'outputDir' in adjusted_args:
+        adjusted_args['outputDir'] = replace_base_path(adjusted_args['outputDir'])
+    
+    # Adjust datasetPath if it exists
+    if 'datasetPath' in adjusted_args:
+        adjusted_args['datasetPath'] = replace_base_path(adjusted_args['datasetPath'])
+    
+    return adjusted_args
 
 
 def discover_configs() -> Dict[str, Path]:
@@ -176,12 +233,13 @@ def list_configs():
         print()
 
 
-def test_config(config_name: str, verbose: bool = True) -> bool:
+def test_config(config_name: str, verbose: bool = True, env: Optional[str] = None) -> bool:
     """Test a specific configuration.
     
     Args:
         config_name: Name of config to test
         verbose: Whether to print progress messages
+        env: Environment name ('kaggle' or 'google_cloud') to adjust paths
         
     Returns:
         True if successful, False otherwise
@@ -190,9 +248,22 @@ def test_config(config_name: str, verbose: bool = True) -> bool:
         if verbose:
             print(f"\n{'='*70}")
             print(f"Testing Configuration: {config_name}")
+            if env:
+                print(f"Environment: {env}")
             print(f"{'='*70}\n")
         
         args = load_config(config_name)
+        
+        # Adjust paths for environment if specified
+        if env:
+            args = adjust_paths_for_environment(args, env)
+            if verbose:
+                print(f"Adjusted paths for {env}:")
+                if 'outputDir' in args:
+                    print(f"  outputDir: {args['outputDir']}")
+                if 'datasetPath' in args:
+                    print(f"  datasetPath: {args['datasetPath']}")
+                print()
         
         # Run training
         trainModel(args)
@@ -231,6 +302,10 @@ Examples:
   python test_model_configuration.py baseline
   python test_model_configuration.py test_adamw
   
+  # Run with environment-specific paths
+  python test_model_configuration.py baseline --env kaggle
+  python test_model_configuration.py baseline --env google_cloud
+  
   # Run multiple configs
   python test_model_configuration.py baseline test_adamw
   
@@ -266,6 +341,15 @@ Examples:
         help='Suppress progress messages'
     )
     
+    parser.add_argument(
+        '--env',
+        '-e',
+        type=str,
+        choices=['kaggle', 'google_cloud'],
+        default=None,
+        help='Environment to use for path adjustment (kaggle or google_cloud)'
+    )
+    
     args = parser.parse_args()
     
     # List configs if requested
@@ -292,7 +376,7 @@ Examples:
     
     results = {}
     for config_name in configs_to_run:
-        success = test_config(config_name, verbose=not args.quiet)
+        success = test_config(config_name, verbose=not args.quiet, env=args.env)
         results[config_name] = success
     
     # Summary

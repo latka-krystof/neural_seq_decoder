@@ -98,9 +98,38 @@ def create_scheduler(
             optimizer, **default_params
         )
     
+    elif sched_type == 'warmup_constant':
+        # Linear warmup followed by constant learning rate
+        if total_steps is None:
+            raise ValueError("total_steps required for warmup_constant scheduler")
+        
+        warmup_steps = params.get('warmup_steps', 200)
+        start_factor = params.get('start_factor', 0.02)  # Start at 2% of max LR
+        
+        # Create warmup scheduler
+        warmup_scheduler = torch.optim.lr_scheduler.LinearLR(
+            optimizer,
+            start_factor=start_factor,
+            end_factor=1.0,
+            total_iters=warmup_steps
+        )
+        
+        # Create constant scheduler (LambdaLR that returns 1.0)
+        constant_scheduler = torch.optim.lr_scheduler.LambdaLR(
+            optimizer,
+            lr_lambda=lambda epoch: 1.0
+        )
+        
+        # Chain them together
+        return torch.optim.lr_scheduler.SequentialLR(
+            optimizer,
+            schedulers=[warmup_scheduler, constant_scheduler],
+            milestones=[warmup_steps]
+        )
+    
     else:
         raise ValueError(
             f"Unknown scheduler type: {sched_type}. "
-            "Choose from: none, linear, cosine, cosine_warmup, cosine_restarts"
+            "Choose from: none, linear, cosine, cosine_warmup, cosine_restarts, warmup_constant"
         )
 

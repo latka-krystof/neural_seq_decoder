@@ -14,12 +14,21 @@ from .dataset import SpeechDataset
 from .optimization import create_optimizer, create_scheduler
 from .augmentations import create_augmentation_pipeline
 from .losses.factory import create_loss
+from .transforms import LogTransform
 
 
 def getDatasetLoaders(
     datasetName,
     batchSize,
+    log_transform=None,
 ):
+    """Get dataset loaders for training and testing.
+    
+    Args:
+        datasetName: Path to pickle file containing preprocessed data
+        batchSize: Batch size for DataLoader
+        log_transform: Optional LogTransform instance to apply to neural features
+    """
     with open(datasetName, "rb") as handle:
         loadedData = pickle.load(handle)
 
@@ -36,8 +45,8 @@ def getDatasetLoaders(
             torch.stack(days),
         )
 
-    train_ds = SpeechDataset(loadedData["train"], transform=None)
-    test_ds = SpeechDataset(loadedData["test"])
+    train_ds = SpeechDataset(loadedData["train"], transform=log_transform)
+    test_ds = SpeechDataset(loadedData["test"], transform=log_transform)
 
     train_loader = DataLoader(
         train_ds,
@@ -67,9 +76,16 @@ def trainModel(args):
     with open(args["outputDir"] + "/args", "wb") as file:
         pickle.dump(args, file)
 
+    # Create log transform if configured
+    log_transform = None
+    if args.get("log_transform", False):
+        epsilon = args.get("log_transform_epsilon", 1e-5)
+        log_transform = LogTransform(epsilon=epsilon)
+
     trainLoader, testLoader, loadedData = getDatasetLoaders(
         args["datasetPath"],
         args["batchSize"],
+        log_transform=log_transform,
     )
 
     model = GRUDecoder(
@@ -84,6 +100,9 @@ def trainModel(args):
         kernelLen=args["kernelLen"],
         gaussianSmoothWidth=args["gaussianSmoothWidth"],
         bidirectional=args["bidirectional"],
+        post_gru_layers=args.get("post_gru_layers", 0),
+        post_gru_hidden_dim=args.get("post_gru_hidden_dim", None),
+        post_gru_dropout=args.get("post_gru_dropout", None),
     ).to(device)
 
     # Create loss function using modular factory (supports both old and new config style)
@@ -274,6 +293,9 @@ def loadModel(modelDir, nInputLayers=24, device="cuda"):
         kernelLen=args["kernelLen"],
         gaussianSmoothWidth=args["gaussianSmoothWidth"],
         bidirectional=args["bidirectional"],
+        post_gru_layers=args.get("post_gru_layers", 0),
+        post_gru_hidden_dim=args.get("post_gru_hidden_dim", None),
+        post_gru_dropout=args.get("post_gru_dropout", None),
     ).to(device)
 
     model.load_state_dict(torch.load(modelWeightPath, map_location=device))

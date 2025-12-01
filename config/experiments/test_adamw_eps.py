@@ -1,5 +1,6 @@
-"""Test AdamW optimizer - Alternative with constant LR phase."""
-modelName = 'test_adamw_2.0_alt'
+"""Test AdamW optimizer with even larger epsilon (0.2) than baseline (0.1).
+Exploring if more conservative epsilon provides better stability."""
+modelName = 'test_adamw_eps'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName
@@ -7,8 +8,10 @@ args['datasetPath'] = '/kaggle/working/neural_seq_decoder/processedData'
 args['seqLen'] = 150
 args['maxTimeSeriesLen'] = 1200
 args['batchSize'] = 64
+args['lrStart'] = 0.02
+args['lrEnd'] = 0.02
 args['nUnits'] = 1024
-args['nBatch'] = 5000
+args['nBatch'] = 10000
 args['nLayers'] = 5
 args['seed'] = 0
 args['nClasses'] = 40
@@ -20,26 +23,17 @@ args['gaussianSmoothWidth'] = 2.0
 args['strideLen'] = 4
 args['kernelLen'] = 32
 args['bidirectional'] = False
+args['l2_decay'] = 1e-5
 
-# Alternative: Lower LR, even lower weight decay
+# Use AdamW optimizer with even larger epsilon (0.2) than baseline (0.1)
+# Testing if more conservative epsilon provides better long-term stability
 args['optimizer'] = {
     'type': 'adamw',
     'params': {
-        'lr': 0.005,  # Conservative LR
-        'weight_decay': 5e-5,  # Very close to baseline (1e-5), just slightly higher
-        'eps': 1e-8,
+        'lr': 0.02,
+        'betas': (0.9, 0.999),
+        'eps': 0.05,  # Even larger than baseline's 0.1 for maximum stability
+        'weight_decay': 1e-5,  # Same as baseline's l2_decay
     }
 }
-
-# Alternative: No scheduler - constant LR (let AdamW's adaptive learning handle it)
-args['scheduler'] = {
-    'type': 'none',  # Constant learning rate
-}
-
-# Gradient clipping for stability
-args['grad_clip'] = 1.0
-
-args['lrStart'] = 0.005
-args['lrEnd'] = 0.005
-args['l2_decay'] = 1e-5
 

@@ -18,6 +18,9 @@ class GRUDecoder(nn.Module):
         kernelLen=14,
         gaussianSmoothWidth=0,
         bidirectional=False,
+        post_gru_layers=0,
+        post_gru_hidden_dim=None,
+        post_gru_dropout=None,
     ):
         super(GRUDecoder, self).__init__()
 
@@ -72,13 +75,33 @@ class GRUDecoder(nn.Module):
                 thisLayer.weight + torch.eye(neural_dim)
             )
 
-        # rnn outputs
-        if self.bidirectional:
-            self.fc_decoder_out = nn.Linear(
-                hidden_dim * 2, n_classes + 1
-            )  # +1 for CTC blank
+        # Post-GRU stack: linear + layer norm + dropout (as in Linderman Lab approach)
+        self.post_gru_layers = post_gru_layers
+        if post_gru_layers > 0:
+            # Determine input and hidden dimensions
+            gru_output_dim = hidden_dim * 2 if self.bidirectional else hidden_dim
+            post_gru_hidden = post_gru_hidden_dim if post_gru_hidden_dim is not None else gru_output_dim
+            post_gru_dropout_rate = post_gru_dropout if post_gru_dropout is not None else dropout
+            
+            # Build stack: Linear -> LayerNorm -> Dropout -> ReLU (repeat)
+            self.post_gru_stack = nn.ModuleList()
+            for i in range(post_gru_layers):
+                input_dim = gru_output_dim if i == 0 else post_gru_hidden
+                self.post_gru_stack.append(nn.Linear(input_dim, post_gru_hidden))
+                self.post_gru_stack.append(nn.LayerNorm(post_gru_hidden))
+                if post_gru_dropout_rate > 0:
+                    self.post_gru_stack.append(nn.Dropout(post_gru_dropout_rate))
+                self.post_gru_stack.append(nn.ReLU())
+            
+            # Final output layer takes post-GRU hidden dimension
+            final_input_dim = post_gru_hidden
         else:
-            self.fc_decoder_out = nn.Linear(hidden_dim, n_classes + 1)  # +1 for CTC blank
+            self.post_gru_stack = None
+            # Final output layer takes GRU output dimension
+            final_input_dim = hidden_dim * 2 if self.bidirectional else hidden_dim
+
+        # rnn outputs
+        self.fc_decoder_out = nn.Linear(final_input_dim, n_classes + 1)  # +1 for CTC blank
 
     def forward(self, neuralInput, dayIdx):
         neuralInput = torch.permute(neuralInput, (0, 2, 1))
@@ -117,6 +140,11 @@ class GRUDecoder(nn.Module):
             ).requires_grad_()
 
         hid, _ = self.gru_decoder(stridedInputs, h0.detach())
+
+        # Apply post-GRU stack if enabled (Linderman Lab approach)
+        if self.post_gru_stack is not None:
+            for layer in self.post_gru_stack:
+                hid = layer(hid)
 
         # get seq
         seq_out = self.fc_decoder_out(hid)

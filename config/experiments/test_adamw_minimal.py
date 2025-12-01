@@ -1,5 +1,4 @@
-"""Test AdamW optimizer - Alternative with constant LR phase."""
-modelName = 'test_adamw_2.0_alt'
+modelName = 'test_adamw_minimal'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName
@@ -7,6 +6,8 @@ args['datasetPath'] = '/kaggle/working/neural_seq_decoder/processedData'
 args['seqLen'] = 150
 args['maxTimeSeriesLen'] = 1200
 args['batchSize'] = 64
+args['lrStart'] = 0.02
+args['lrEnd'] = 0.02
 args['nUnits'] = 1024
 args['nBatch'] = 5000
 args['nLayers'] = 5
@@ -20,26 +21,24 @@ args['gaussianSmoothWidth'] = 2.0
 args['strideLen'] = 4
 args['kernelLen'] = 32
 args['bidirectional'] = False
+args['l2_decay'] = 1e-5
 
-# Alternative: Lower LR, even lower weight decay
+# Use AdamW optimizer with minimal weight decay (matching baseline's l2_decay)
 args['optimizer'] = {
     'type': 'adamw',
     'params': {
-        'lr': 0.005,  # Conservative LR
-        'weight_decay': 5e-5,  # Very close to baseline (1e-5), just slightly higher
+        'lr': 0.02,
+        'weight_decay': 1e-5,  # Same as baseline's l2_decay
         'eps': 1e-8,
     }
 }
 
-# Alternative: No scheduler - constant LR (let AdamW's adaptive learning handle it)
+# Add learning rate warmup: ramp from 2% to 100% over 150 steps, then stay constant
 args['scheduler'] = {
-    'type': 'none',  # Constant learning rate
+    'type': 'warmup_constant',
+    'params': {
+        'warmup_steps': 150,  # Warmup over first 150 steps (3% of training)
+        'start_factor': 0.02,  # Start at 2% of max LR (0.02 * 0.02 = 0.0004)
+    }
 }
-
-# Gradient clipping for stability
-args['grad_clip'] = 1.0
-
-args['lrStart'] = 0.005
-args['lrEnd'] = 0.005
-args['l2_decay'] = 1e-5
 
