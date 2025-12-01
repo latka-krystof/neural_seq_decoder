@@ -103,6 +103,18 @@ def trainModel(args):
         post_gru_layers=args.get("post_gru_layers", 0),
         post_gru_hidden_dim=args.get("post_gru_hidden_dim", None),
         post_gru_dropout=args.get("post_gru_dropout", None),
+        use_pre_gru_layernorm=args.get("use_pre_gru_layernorm", False),
+        use_day_specific_params=args.get("use_day_specific_params", True),
+        cnn_layers=args.get("cnn_layers", 0),
+        cnn_channels=args.get("cnn_channels", None),
+        cnn_kernel_sizes=args.get("cnn_kernel_sizes", None),
+        cnn_strides=args.get("cnn_strides", None),
+        cnn_padding=args.get("cnn_padding", None),
+        use_cnn_instead_of_unfold=args.get("use_cnn_instead_of_unfold", False),
+        use_attention=args.get("use_attention", False),
+        attention_heads=args.get("attention_heads", 8),
+        attention_ff_dim=args.get("attention_ff_dim", None),
+        attention_dropout=args.get("attention_dropout", None),
     ).to(device)
 
     # Create loss function using modular factory (supports both old and new config style)
@@ -182,7 +194,20 @@ def trainModel(args):
         pred = model.forward(X, dayIdx)
 
         # Calculate input lengths for CTC
-        input_lengths = ((X_len - model.kernelLen) / model.strideLen).to(torch.int32)
+        # Account for CNN stride if CNN is used
+        if model.cnn_layers > 0:
+            # CNN reduces sequence length by its total stride
+            effective_seq_len = X_len / model.cnn_total_stride
+        else:
+            effective_seq_len = X_len
+        
+        # Account for unfold operation (unless CNN replaces it)
+        if model.cnn_layers > 0 and model.use_cnn_instead_of_unfold:
+            # CNN replaces unfold, so no additional reduction
+            input_lengths = effective_seq_len.to(torch.int32)
+        else:
+            # Standard unfold reduction
+            input_lengths = ((effective_seq_len - model.kernelLen) / model.strideLen).to(torch.int32)
         
         # Apply loss function
         # Note: CTC expects logits in (seq_len, batch, n_classes) format
@@ -222,8 +247,16 @@ def trainModel(args):
                     )
 
                     pred = model.forward(X, testDayIdx)
-                    # Calculate input lengths for CTC
-                    input_lengths = ((X_len - model.kernelLen) / model.strideLen).to(torch.int32)
+                    # Calculate input lengths for CTC (same logic as training)
+                    if model.cnn_layers > 0:
+                        effective_seq_len = X_len / model.cnn_total_stride
+                    else:
+                        effective_seq_len = X_len
+                    
+                    if model.cnn_layers > 0 and model.use_cnn_instead_of_unfold:
+                        input_lengths = effective_seq_len.to(torch.int32)
+                    else:
+                        input_lengths = ((effective_seq_len - model.kernelLen) / model.strideLen).to(torch.int32)
                     # Apply loss function
                     logits = torch.permute(pred.log_softmax(2), [1, 0, 2])
                     loss = loss_fn(logits, y, input_lengths, y_len)
@@ -232,9 +265,16 @@ def trainModel(args):
                         loss = torch.sum(loss)
                     allLoss.append(loss.cpu().detach().numpy())
 
-                    adjustedLens = ((X_len - model.kernelLen) / model.strideLen).to(
-                        torch.int32
-                    )
+                    # Calculate adjusted lengths for decoding (same logic as input_lengths)
+                    if model.cnn_layers > 0:
+                        effective_seq_len = X_len / model.cnn_total_stride
+                    else:
+                        effective_seq_len = X_len
+                    
+                    if model.cnn_layers > 0 and model.use_cnn_instead_of_unfold:
+                        adjustedLens = effective_seq_len.to(torch.int32)
+                    else:
+                        adjustedLens = ((effective_seq_len - model.kernelLen) / model.strideLen).to(torch.int32)
                     for iterIdx in range(pred.shape[0]):
                         decodedSeq = torch.argmax(
                             torch.tensor(pred[iterIdx, 0 : adjustedLens[iterIdx], :]),
@@ -296,6 +336,18 @@ def loadModel(modelDir, nInputLayers=24, device="cuda"):
         post_gru_layers=args.get("post_gru_layers", 0),
         post_gru_hidden_dim=args.get("post_gru_hidden_dim", None),
         post_gru_dropout=args.get("post_gru_dropout", None),
+        use_pre_gru_layernorm=args.get("use_pre_gru_layernorm", False),
+        use_day_specific_params=args.get("use_day_specific_params", True),
+        cnn_layers=args.get("cnn_layers", 0),
+        cnn_channels=args.get("cnn_channels", None),
+        cnn_kernel_sizes=args.get("cnn_kernel_sizes", None),
+        cnn_strides=args.get("cnn_strides", None),
+        cnn_padding=args.get("cnn_padding", None),
+        use_cnn_instead_of_unfold=args.get("use_cnn_instead_of_unfold", False),
+        use_attention=args.get("use_attention", False),
+        attention_heads=args.get("attention_heads", 8),
+        attention_ff_dim=args.get("attention_ff_dim", None),
+        attention_dropout=args.get("attention_dropout", None),
     ).to(device)
 
     model.load_state_dict(torch.load(modelWeightPath, map_location=device))

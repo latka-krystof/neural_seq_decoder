@@ -1,5 +1,6 @@
-"""Test SpecAugment (time + feature masking combined) - Phase 2 Components 1+2."""
-modelName = 'test_specaugment'
+"""Test feature masking augmentation with 4 masks.
+Varying number of masks to find optimal augmentation strength."""
+modelName = 'test_feature_masking_nummasks4'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName
@@ -10,7 +11,7 @@ args['batchSize'] = 64
 args['lrStart'] = 0.02
 args['lrEnd'] = 0.02
 args['nUnits'] = 1024
-args['nBatch'] = 5000
+args['nBatch'] = 2000
 args['nLayers'] = 5
 args['seed'] = 0
 args['nClasses'] = 40
@@ -22,25 +23,22 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# NEW: Use SpecAugment (time + feature masking combined)
+# Use modular augmentation with feature masking (4 masks)
 args['augmentation'] = {
     'white_noise': {
         'enabled': True,
-        'std': 0.8  # Keep same as baseline
+        'std': 0.8
     },
     'constant_offset': {
         'enabled': True,
-        'std': 0.2  # Keep same as baseline
+        'std': 0.2
     },
     'time_masking': {
-        'enabled': True,  # Phase 2 Component 1
-        'num_masks': 2,
-        'mask_width': 20,
-        'p': 1.0
+        'enabled': False
     },
     'feature_masking': {
-        'enabled': True,  # Phase 2 Component 2
-        'num_masks': 2,
+        'enabled': True,
+        'num_masks': 4,  # Even more masks (strongest augmentation)
         'mask_width': 16,
         'p': 1.0
     }
