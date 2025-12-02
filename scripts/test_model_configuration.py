@@ -45,6 +45,9 @@ ENV_PATHS = {
     'google_cloud': {
         'base': '/content/drive/MyDrive/UCLA_classes/ece243a/neural_seq_decoder',
     },
+    'gcp_instance': {
+        'base': '/home/latka/github/neural_seq_decoder',
+    },
 }
 
 
@@ -305,6 +308,7 @@ Examples:
   # Run with environment-specific paths
   python test_model_configuration.py baseline --env kaggle
   python test_model_configuration.py baseline --env google_cloud
+  python test_model_configuration.py baseline --env gcp_instance
   
   # Run multiple configs
   python test_model_configuration.py baseline test_adamw
@@ -345,9 +349,9 @@ Examples:
         '--env',
         '-e',
         type=str,
-        choices=['kaggle', 'google_cloud'],
+        choices=['kaggle', 'google_cloud', 'gcp_instance'],
         default=None,
-        help='Environment to use for path adjustment (kaggle or google_cloud)'
+        help='Environment to use for path adjustment (kaggle, google_cloud, or gcp_instance)'
     )
     
     args = parser.parse_args()
