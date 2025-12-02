@@ -1,6 +1,6 @@
 """Test AdamW optimizer with epsilon 0.05.
 Varying epsilon to find optimal value for AdamW optimizer."""
-modelName = 'test_adamw_eps_005'
+modelName = 'test_adamw_eps_0001'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName

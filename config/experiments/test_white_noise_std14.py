@@ -1,6 +1,6 @@
 """Test white noise augmentation with std 1.0.
 Varying white noise amount to find optimal augmentation strength."""
-modelName = 'test_white_noise_std10'
+modelName = 'test_white_noise_std14'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName

@@ -4,7 +4,7 @@ which can help the GRU focus on longer-range dependencies.
 
 Architecture: Neural Input -> CNN Stack -> Unfold -> GRU -> Output
 """
-modelName = 'test_cnn_gru'
+modelName = 'test_cnn_gru_layers2'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName
@@ -15,7 +15,7 @@ args['batchSize'] = 64
 args['lrStart'] = 0.02
 args['lrEnd'] = 0.02
 args['nUnits'] = 1024
-args['nBatch'] = 10000
+args['nBatch'] = 2000
 args['nLayers'] = 5
 args['seed'] = 0
 args['nClasses'] = 40

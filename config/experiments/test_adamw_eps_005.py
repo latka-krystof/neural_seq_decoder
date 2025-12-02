@@ -1,6 +1,6 @@
 """Test AdamW optimizer with even larger epsilon (0.2) than baseline (0.1).
 Exploring if more conservative epsilon provides better stability."""
-modelName = 'test_adamw_eps'
+modelName = 'test_adamw_eps_005'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName

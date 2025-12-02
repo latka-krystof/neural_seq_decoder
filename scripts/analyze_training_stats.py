@@ -63,9 +63,8 @@ def plot_single_run(stats, name="Training Run", save_path=None):
     # Convert evaluation index to batch number (assuming eval every 100 batches)
     batches = np.arange(len(test_loss)) * 100
     
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
-    
-    # Plot loss
+    # Plot loss on separate figure
+    fig1, ax1 = plt.subplots(1, 1, figsize=(10, 6))
     ax1.plot(batches, test_loss, 'b-', linewidth=2, label='Test Loss')
     ax1.axhline(y=np.min(test_loss), color='r', linestyle='--', alpha=0.5, label=f'Best: {np.min(test_loss):.6f}')
     ax1.set_xlabel('Batch Number')
@@ -73,8 +72,18 @@ def plot_single_run(stats, name="Training Run", save_path=None):
     ax1.set_title(f'{name} - Test Loss')
     ax1.grid(True, alpha=0.3)
     ax1.legend()
+    plt.tight_layout()
     
-    # Plot CER
+    if save_path:
+        # Save loss plot
+        loss_path = save_path.replace('.png', '_loss.png') if save_path.endswith('.png') else f"{save_path}_loss.png"
+        plt.savefig(loss_path, dpi=150, bbox_inches='tight')
+        print(f"Loss plot saved to: {loss_path}")
+    else:
+        plt.show()
+    
+    # Plot CER on separate figure
+    fig2, ax2 = plt.subplots(1, 1, figsize=(10, 6))
     ax2.plot(batches, test_cer, 'g-', linewidth=2, label='Test CER')
     ax2.axhline(y=np.min(test_cer), color='r', linestyle='--', alpha=0.5, label=f'Best: {np.min(test_cer):.6f}')
     ax2.set_xlabel('Batch Number')
@@ -82,47 +91,62 @@ def plot_single_run(stats, name="Training Run", save_path=None):
     ax2.set_title(f'{name} - Character Error Rate')
     ax2.grid(True, alpha=0.3)
     ax2.legend()
-    
     plt.tight_layout()
     
     if save_path:
-        plt.savefig(save_path, dpi=150, bbox_inches='tight')
-        print(f"\nPlot saved to: {save_path}")
+        # Save CER plot
+        cer_path = save_path.replace('.png', '_cer.png') if save_path.endswith('.png') else f"{save_path}_cer.png"
+        plt.savefig(cer_path, dpi=150, bbox_inches='tight')
+        print(f"CER plot saved to: {cer_path}")
     else:
         plt.show()
 
 
 def plot_comparison(stats_list, names_list, save_path=None):
     """Plot learning curves for multiple runs for comparison."""
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
-    
     colors = plt.cm.tab10(np.linspace(0, 1, len(stats_list)))
     
+    # Plot loss comparison on separate figure
+    fig1, ax1 = plt.subplots(1, 1, figsize=(12, 6))
     for i, (stats, name, color) in enumerate(zip(stats_list, names_list, colors)):
         test_loss = stats['testLoss']
-        test_cer = stats['testCER']
         batches = np.arange(len(test_loss)) * 100
-        
         ax1.plot(batches, test_loss, color=color, linewidth=2, label=name, alpha=0.8)
-        ax2.plot(batches, test_cer, color=color, linewidth=2, label=name, alpha=0.8)
     
     ax1.set_xlabel('Batch Number')
     ax1.set_ylabel('Test Loss')
     ax1.set_title('Test Loss Comparison')
     ax1.grid(True, alpha=0.3)
     ax1.legend()
+    plt.tight_layout()
+    
+    if save_path:
+        # Save loss comparison plot
+        loss_path = save_path.replace('.png', '_loss.png') if save_path.endswith('.png') else f"{save_path}_loss.png"
+        plt.savefig(loss_path, dpi=150, bbox_inches='tight')
+        print(f"Loss comparison plot saved to: {loss_path}")
+    else:
+        plt.show()
+    
+    # Plot CER comparison on separate figure
+    fig2, ax2 = plt.subplots(1, 1, figsize=(12, 6))
+    for i, (stats, name, color) in enumerate(zip(stats_list, names_list, colors)):
+        test_cer = stats['testCER']
+        batches = np.arange(len(test_cer)) * 100
+        ax2.plot(batches, test_cer, color=color, linewidth=2, label=name, alpha=0.8)
     
     ax2.set_xlabel('Batch Number')
     ax2.set_ylabel('Character Error Rate')
     ax2.set_title('Character Error Rate Comparison')
     ax2.grid(True, alpha=0.3)
     ax2.legend()
-    
     plt.tight_layout()
     
     if save_path:
-        plt.savefig(save_path, dpi=150, bbox_inches='tight')
-        print(f"\nComparison plot saved to: {save_path}")
+        # Save CER comparison plot
+        cer_path = save_path.replace('.png', '_cer.png') if save_path.endswith('.png') else f"{save_path}_cer.png"
+        plt.savefig(cer_path, dpi=150, bbox_inches='tight')
+        print(f"CER comparison plot saved to: {cer_path}")
     else:
         plt.show()
 
