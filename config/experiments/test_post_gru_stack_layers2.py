@@ -1,7 +1,7 @@
 """Test modified architecture with post-GRU stack (linear + layer norm + dropout).
 Based on Linderman Lab approach which found that incorporating a stack of linear,
 layer normalization, and dropout layers after the bidirectional GRU layers helped improve performance."""
-modelName = 'test_post_gru_stack'
+modelName = 'test_post_gru_stack_layers2'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName

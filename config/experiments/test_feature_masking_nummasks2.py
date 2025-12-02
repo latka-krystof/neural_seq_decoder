@@ -1,5 +1,5 @@
 """Test feature masking augmentation - Phase 2 Component 2."""
-modelName = 'test_feature_masking'
+modelName = 'test_feature_masking_nummasks2'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName

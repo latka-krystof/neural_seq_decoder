@@ -5,7 +5,7 @@ This experiment tests:
 1. Adding layer normalization before GRU layers
 2. Optionally disabling day-specific parameters to see if layer norm can handle variation
 """
-modelName = 'test_pre_gru_layernorm'
+modelName = 'test_pre_gru_layernorm_no_day_specific'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName
@@ -37,4 +37,4 @@ args['use_pre_gru_layernorm'] = True
 # Option to disable day-specific parameters
 # If True, keeps day-specific weights/bias (baseline behavior)
 # If False, removes day-specific params to test if layer norm alone can handle variation
-args['use_day_specific_params'] = True  # Set to False to test if layer norm removes need for day params
+args['use_day_specific_params'] = False  # Set to False to test if layer norm removes need for day params

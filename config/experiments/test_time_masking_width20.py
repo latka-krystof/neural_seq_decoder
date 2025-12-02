@@ -1,5 +1,5 @@
 """Test time masking augmentation - Phase 2 Component 1."""
-modelName = 'test_time_masking'
+modelName = 'test_time_masking_width20'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName

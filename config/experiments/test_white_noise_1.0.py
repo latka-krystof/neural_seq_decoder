@@ -1,5 +1,5 @@
 """Test increased white noise (0.8 -> 1.0) - Phase 1 Component 3."""
-modelName = 'test_white_noise_1.0'
+modelName = 'test_white_noise_std10'
 
 args = {}
 args['outputDir'] = '/kaggle/working/neural_seq_decoder/logs/speech_logs/' + modelName
@@ -10,7 +10,7 @@ args['batchSize'] = 64
 args['lrStart'] = 0.02
 args['lrEnd'] = 0.02
 args['nUnits'] = 1024
-args['nBatch'] = 5000
+args['nBatch'] = 2000
 args['nLayers'] = 5
 args['seed'] = 0
 args['nClasses'] = 40
