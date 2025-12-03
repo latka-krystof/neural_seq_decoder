@@ -1,4 +1,4 @@
-"""Test hybrid CNN+GRU architecture with 1 CNN layer"""
+"""Test hybrid CNN+GRU architecture with 1 CNN layer."""
 modelName = 'test_cnn_gru_layers1'
 
 args = {}
