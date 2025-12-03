@@ -1,9 +1,4 @@
-"""Test hybrid CNN+GRU architecture for local feature extraction.
-CNN layers are added before the GRU to extract local temporal patterns,
-which can help the GRU focus on longer-range dependencies.
-
-Architecture: Neural Input -> CNN Stack -> Unfold -> GRU -> Output
-"""
+"""Test hybrid CNN+GRU architecture with 2 CNN layers."""
 modelName = 'test_cnn_gru_layers2'
 
 args = {}
@@ -29,12 +24,10 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# CNN configuration for hybrid CNN+GRU architecture
-# CNN layers extract local features before GRU processes longer-range dependencies
-args['cnn_layers'] = 2  # Number of CNN layers
-args['cnn_channels'] = [256, 256]  # Output channels for each CNN layer
-args['cnn_kernel_sizes'] = [3, 3]  # Kernel size for each layer
-args['cnn_strides'] = [1, 1]  # Stride for each layer (1 = no downsampling)
-args['cnn_padding'] = [1, 1]  # Padding to maintain sequence length
-args['use_cnn_instead_of_unfold'] = False  # Keep unfold operation after CNN
+args['cnn_layers'] = 2
+args['cnn_channels'] = [256, 256]
+args['cnn_kernel_sizes'] = [3, 3]
+args['cnn_strides'] = [1, 1]
+args['cnn_padding'] = [1, 1]
+args['use_cnn_instead_of_unfold'] = False
 

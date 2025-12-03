@@ -1,4 +1,4 @@
-"""Test feature masking augmentation - Phase 2 Component 2."""
+"""Test feature masking augmentation with 2 masks."""
 modelName = 'test_feature_masking_nummasks2'
 
 args = {}
@@ -22,28 +22,26 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# NEW: Use modular augmentation with feature masking
 args['augmentation'] = {
     'white_noise': {
         'enabled': True,
-        'std': 0.8  # Keep same as baseline
+        'std': 0.8
     },
     'constant_offset': {
         'enabled': True,
-        'std': 0.2  # Keep same as baseline
+        'std': 0.2
     },
     'time_masking': {
-        'enabled': False  # Test feature masking alone first
+        'enabled': False
     },
     'feature_masking': {
-        'enabled': True,  # NEW - Phase 2
+        'enabled': True,
         'num_masks': 2,
         'mask_width': 16,
         'p': 1.0
     }
 }
 
-# Old-style args (ignored when using modular augmentation)
 args['whiteNoiseSD'] = 0.8
 args['constantOffsetSD'] = 0.2
 

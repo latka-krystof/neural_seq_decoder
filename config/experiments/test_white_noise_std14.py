@@ -1,5 +1,4 @@
-"""Test white noise augmentation with std 1.0.
-Varying white noise amount to find optimal augmentation strength."""
+"""Test white noise augmentation with std 1.4."""
 modelName = 'test_white_noise_std14'
 
 args = {}
@@ -23,19 +22,17 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# Use modular augmentation with increased white noise
 args['augmentation'] = {
     'white_noise': {
         'enabled': True,
-        'std': 1.4  # Increased
+        'std': 1.4
     },
     'constant_offset': {
         'enabled': True,
-        'std': 0.2  # Keep same as baseline
+        'std': 0.2
     }
 }
 
-# Old-style args (ignored when using modular augmentation)
 args['whiteNoiseSD'] = 1.0
 args['constantOffsetSD'] = 0.2
 

@@ -1,5 +1,4 @@
-"""Test post-GRU stack with 3 layers.
-Varying number of post-GRU layers to find optimal architecture depth."""
+"""Test post-GRU stack with 3 layers."""
 modelName = 'test_post_gru_stack_layers3'
 
 args = {}
@@ -25,7 +24,6 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# Post-GRU stack configuration with 3 layers (deeper)
 args['post_gru_layers'] = 3
 args['post_gru_hidden_dim'] = None
 args['post_gru_dropout'] = None

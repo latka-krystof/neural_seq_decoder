@@ -1,4 +1,4 @@
-"""Test time masking augmentation - Phase 2 Component 1."""
+"""Test time masking augmentation with mask width 20."""
 modelName = 'test_time_masking_width20'
 
 args = {}
@@ -22,28 +22,26 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# NEW: Use modular augmentation with time masking
 args['augmentation'] = {
     'white_noise': {
         'enabled': True,
-        'std': 0.8  # Keep same as baseline
+        'std': 0.8
     },
     'constant_offset': {
         'enabled': True,
-        'std': 0.2  # Keep same as baseline
+        'std': 0.2
     },
     'time_masking': {
-        'enabled': True,  # NEW - Phase 2
+        'enabled': True,
         'num_masks': 2,
         'mask_width': 20,
         'p': 1.0
     },
     'feature_masking': {
-        'enabled': False  # Test time masking alone first
+        'enabled': False
     }
 }
 
-# Old-style args (ignored when using modular augmentation)
 args['whiteNoiseSD'] = 0.8
 args['constantOffsetSD'] = 0.2
 

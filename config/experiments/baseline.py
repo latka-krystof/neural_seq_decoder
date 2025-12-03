@@ -10,7 +10,7 @@ args['batchSize'] = 64
 args['lrStart'] = 0.02
 args['lrEnd'] = 0.02
 args['nUnits'] = 1024
-args['nBatch'] = 5000
+args['nBatch'] = 10000
 args['nLayers'] = 5
 args['seed'] = 0
 args['nClasses'] = 40
@@ -23,7 +23,4 @@ args['strideLen'] = 4
 args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
-
-# Note: Preprocessing is done in the notebook, not here
-# This config uses the old-style augmentation (backward compatible)
 

@@ -1,5 +1,4 @@
-"""Test hybrid CNN+GRU architecture with 3 CNN layers.
-Varying number of CNN layers to find optimal feature extraction depth."""
+"""Test hybrid CNN+GRU architecture with 3 CNN layers."""
 modelName = 'test_cnn_gru_layers3'
 
 args = {}
@@ -25,9 +24,8 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# CNN configuration with 3 layers (deeper)
 args['cnn_layers'] = 3
-args['cnn_channels'] = [256, 256, 256]  # Three layers with 256 channels each
+args['cnn_channels'] = [256, 256, 256]
 args['cnn_kernel_sizes'] = [3, 3, 3]
 args['cnn_strides'] = [1, 1, 1]
 args['cnn_padding'] = [1, 1, 1]

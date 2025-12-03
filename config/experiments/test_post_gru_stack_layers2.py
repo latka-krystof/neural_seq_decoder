@@ -1,6 +1,4 @@
-"""Test modified architecture with post-GRU stack (linear + layer norm + dropout).
-Based on Linderman Lab approach which found that incorporating a stack of linear,
-layer normalization, and dropout layers after the bidirectional GRU layers helped improve performance."""
+"""Test post-GRU stack with 2 layers."""
 modelName = 'test_post_gru_stack_layers2'
 
 args = {}
@@ -26,9 +24,7 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# Post-GRU stack configuration (Linderman Lab approach)
-# Stack structure: Linear -> LayerNorm -> Dropout -> ReLU (repeated)
-args['post_gru_layers'] = 2  # Number of linear layers in the stack
-args['post_gru_hidden_dim'] = None  # None = use same as GRU output (1024)
-args['post_gru_dropout'] = None  # None = use same as main dropout (0.4)
+args['post_gru_layers'] = 2
+args['post_gru_hidden_dim'] = None
+args['post_gru_dropout'] = None
 

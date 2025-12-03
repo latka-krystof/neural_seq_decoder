@@ -1,5 +1,4 @@
-"""Test AdamW optimizer with epsilon 0.1.
-Varying epsilon to find optimal value for AdamW optimizer."""
+"""Test AdamW optimizer with epsilon 0.1."""
 modelName = 'test_adamw_eps_010'
 
 args = {}
@@ -25,13 +24,12 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# Use AdamW optimizer with larger epsilon (0.1, same as baseline Adam)
 args['optimizer'] = {
     'type': 'adamw',
     'params': {
         'lr': 0.02,
         'betas': (0.9, 0.999),
-        'eps': 0.1,  # Larger epsilon (same as baseline Adam)
+        'eps': 0.1,
         'weight_decay': 1e-5,
     }
 }

@@ -1,4 +1,4 @@
-"""Test Focal CTC loss - Phase 2 Component 4."""
+"""Test Focal CTC loss."""
 modelName = 'test_focal_ctc'
 
 args = {}
@@ -16,22 +16,21 @@ args['seed'] = 0
 args['nClasses'] = 40
 args['nInputFeatures'] = 256
 args['dropout'] = 0.4
-args['whiteNoiseSD'] = 0.8  # Keep same as baseline
-args['constantOffsetSD'] = 0.2  # Keep same as baseline
+args['whiteNoiseSD'] = 0.8
+args['constantOffsetSD'] = 0.2
 args['gaussianSmoothWidth'] = 2.0
 args['strideLen'] = 4
 args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# NEW: Use modular loss function (Focal CTC)
 args['loss'] = {
-    'type': 'focal_ctc',  # NEW - Phase 2
+    'type': 'focal_ctc',
     'params': {
         'blank': 0,
         'reduction': 'mean',
-        'gamma': 2.0,  # Focusing parameter (higher = more focus on hard examples)
-        'alpha': None,  # Optional class-specific weighting
+        'gamma': 2.0,
+        'alpha': None,
         'zero_infinity': True
     }
 }

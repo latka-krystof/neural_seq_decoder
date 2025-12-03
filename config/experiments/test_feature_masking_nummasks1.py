@@ -1,5 +1,4 @@
-"""Test feature masking augmentation with 1 mask.
-Varying number of masks to find optimal augmentation strength."""
+"""Test feature masking augmentation with 1 mask."""
 modelName = 'test_feature_masking_nummasks1'
 
 args = {}
@@ -23,7 +22,6 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# Use modular augmentation with feature masking (1 mask)
 args['augmentation'] = {
     'white_noise': {
         'enabled': True,
@@ -38,13 +36,12 @@ args['augmentation'] = {
     },
     'feature_masking': {
         'enabled': True,
-        'num_masks': 1,  # Fewer masks (lighter augmentation)
+        'num_masks': 1,
         'mask_width': 16,
         'p': 1.0
     }
 }
 
-# Old-style args (ignored when using modular augmentation)
 args['whiteNoiseSD'] = 0.8
 args['constantOffsetSD'] = 0.2
 

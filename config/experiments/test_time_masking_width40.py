@@ -1,5 +1,4 @@
-"""Test time masking augmentation with mask width 40.
-Varying mask width to find optimal temporal masking strength."""
+"""Test time masking augmentation with mask width 40."""
 modelName = 'test_time_masking_width40'
 
 args = {}
@@ -23,7 +22,6 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# Use modular augmentation with time masking (widest masks)
 args['augmentation'] = {
     'white_noise': {
         'enabled': True,
@@ -36,7 +34,7 @@ args['augmentation'] = {
     'time_masking': {
         'enabled': True,
         'num_masks': 2,
-        'mask_width': 40,  # Widest masks (strongest augmentation)
+        'mask_width': 40,
         'p': 1.0
     },
     'feature_masking': {
@@ -44,7 +42,6 @@ args['augmentation'] = {
     }
 }
 
-# Old-style args (ignored when using modular augmentation)
 args['whiteNoiseSD'] = 0.8
 args['constantOffsetSD'] = 0.2
 

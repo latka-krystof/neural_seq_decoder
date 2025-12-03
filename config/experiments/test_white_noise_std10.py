@@ -1,4 +1,4 @@
-"""Test increased white noise (0.8 -> 1.0) - Phase 1 Component 3."""
+"""Test white noise augmentation with std 1.0."""
 modelName = 'test_white_noise_std10'
 
 args = {}
@@ -22,19 +22,17 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# NEW: Use modular augmentation with increased white noise
 args['augmentation'] = {
     'white_noise': {
         'enabled': True,
-        'std': 1.0  # Increased from baseline 0.8
+        'std': 1.0
     },
     'constant_offset': {
         'enabled': True,
-        'std': 0.2  # Keep same as baseline
+        'std': 0.2
     }
 }
 
-# Old-style args (ignored when using modular augmentation)
 args['whiteNoiseSD'] = 1.0
 args['constantOffsetSD'] = 0.2
 

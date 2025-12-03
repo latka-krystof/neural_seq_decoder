@@ -1,10 +1,4 @@
-"""Test pre-GRU layer normalization to potentially remove need for day-specific parameters.
-Based on [2] which used layer normalization before Transformer layers to handle day-to-day variation.
-
-This experiment tests:
-1. Adding layer normalization before GRU layers
-2. Optionally disabling day-specific parameters to see if layer norm can handle variation
-"""
+"""Test pre-GRU layer normalization."""
 modelName = 'test_pre_gru_layernorm_day_specific'
 
 args = {}
@@ -30,11 +24,5 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# Pre-GRU layer normalization configuration
-# Layer norm is applied to strided inputs before GRU (as in [2] with Transformer)
 args['use_pre_gru_layernorm'] = True
-
-# Option to disable day-specific parameters
-# If True, keeps day-specific weights/bias (baseline behavior)
-# If False, removes day-specific params to test if layer norm alone can handle variation
-args['use_day_specific_params'] = True  # Set to False to test if layer norm removes need for day params
+args['use_day_specific_params'] = True

@@ -1,5 +1,4 @@
-"""Test AdamW optimizer with epsilon 0.01.
-Varying epsilon to find optimal value for AdamW optimizer."""
+"""Test AdamW optimizer with epsilon 0.01."""
 modelName = 'test_adamw_eps_001'
 
 args = {}
@@ -25,13 +24,12 @@ args['kernelLen'] = 32
 args['bidirectional'] = False
 args['l2_decay'] = 1e-5
 
-# Use AdamW optimizer with smaller epsilon (0.01, closer to PyTorch default)
 args['optimizer'] = {
     'type': 'adamw',
     'params': {
         'lr': 0.02,
         'betas': (0.9, 0.999),
-        'eps': 0.01,  # Smaller epsilon
+        'eps': 0.01,
         'weight_decay': 1e-5,
     }
 }
